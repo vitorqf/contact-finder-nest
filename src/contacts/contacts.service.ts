@@ -16,7 +16,20 @@ export class ContactsService {
     private contactRepository: Repository<Contact>,
   ) {}
 
-  create(createContactDto: CreateContactDto) {
+  async create(createContactDto: CreateContactDto) {
+    if (
+      !createContactDto.name ||
+      !createContactDto.email ||
+      !createContactDto.phone
+    ) {
+      throw new BadRequestException('Email, name, and phone are required');
+    }
+    const existingContact = await this.contactRepository.findOne({
+      where: { email: createContactDto.email },
+    });
+    if (existingContact) {
+      throw new BadRequestException('Contact with this email already exists');
+    }
     return this.contactRepository.save(createContactDto);
   }
 
